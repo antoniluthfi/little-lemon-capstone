@@ -3,5 +3,6 @@
 
     <style name="Theme.LittleLemonCapstone" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@color/purple_700</item>
+        <item name="android:fontFamily">@font/karla_regular</item>
     </style>
 </resources>
