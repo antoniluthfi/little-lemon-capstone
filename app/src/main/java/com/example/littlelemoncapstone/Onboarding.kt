@@ -11,28 +11,36 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 val karlaFont = FontFamily(Font(R.font.karla_regular))
 
 @Composable
-fun Form() {
+fun Form(userPreferences: UserPreferences, navController: NavHostController) {
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 10.dp)
-            .padding(top = 50.dp)
+            .padding(horizontal = 20.dp)
+            .padding(top = 40.dp)
     ) {
         Text(
             text = "Personal Information",
@@ -41,18 +49,17 @@ fun Form() {
             fontFamily = karlaFont,
         )
 
-        Column(modifier = Modifier.padding(top = 50.dp)) {
+        Column(modifier = Modifier.padding(top = 40.dp)) {
             Text(
                 text = "First Name",
                 fontWeight = FontWeight.Bold,
                 fontFamily = karlaFont,
-                color = Color(R.color.primary),
+                color = colorResource(R.color.primary),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             TextField(
                 value = firstName,
                 onValueChange = { firstName = it },
-                label = { Text(text = "First Name") },
                 placeholder = { Text(text = "Type your first name") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -67,6 +74,7 @@ fun Form() {
                     disabledIndicatorColor = Color.Transparent,
                     backgroundColor = Color.White
                 ),
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
         }
 
@@ -75,13 +83,12 @@ fun Form() {
                 text = "Last Name",
                 fontWeight = FontWeight.Bold,
                 fontFamily = karlaFont,
-                color = Color(R.color.primary),
+                color = colorResource(R.color.primary),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             TextField(
                 value = lastName,
                 onValueChange = { lastName = it },
-                label = { Text(text = "Last Name") },
                 placeholder = { Text(text = "Type your last name") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -96,6 +103,7 @@ fun Form() {
                     disabledIndicatorColor = Color.Transparent,
                     backgroundColor = Color.White
                 ),
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words)
             )
         }
 
@@ -104,13 +112,12 @@ fun Form() {
                 text = "Email",
                 fontWeight = FontWeight.Bold,
                 fontFamily = karlaFont,
-                color = Color(R.color.primary),
+                color = colorResource(R.color.primary),
                 modifier = Modifier.padding(bottom = 5.dp)
             )
             TextField(
                 value = email,
                 onValueChange = { email = it },
-                label = { Text(text = "Email") },
                 placeholder = { Text(text = "Type your email address") },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -131,26 +138,87 @@ fun Form() {
 
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    if (firstName.isBlank() || lastName.isBlank() || email.isBlank()) {
+                        showErrorDialog = true
+                    } else {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            userPreferences.setUserData(firstName, lastName, email)
+                        }
+
+                        showSuccessDialog = true
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp),
+                    .height(50.dp),
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color(R.color.yellow)
+                    backgroundColor = colorResource(R.color.yellow)
                 )
             ) {
-                Text(text = "Register", color = Color.White, fontFamily = karlaFont)
+                Text(
+                    text = "Register",
+                    color = Color.Black,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = karlaFont
+                )
+            }
+
+            if (showErrorDialog) {
+                AlertDialog(
+                    onDismissRequest = { /*TODO*/ },
+                    title = { Text("Failed") },
+                    text = { Text("Registration unsuccessful. Please enter all data.") },
+                    confirmButton = {
+                        Button(
+                            onClick = { showErrorDialog = false },
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = colorResource(R.color.yellow)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = "OK", fontFamily = karlaFont)
+                        }
+                    })
+            }
+
+            if (showSuccessDialog) {
+                AlertDialog(
+                    onDismissRequest = { /*TODO*/ },
+                    title = { Text("Success") },
+                    text = { Text("Registration successful!") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showSuccessDialog = false
+                                navController.navigate(Home.route)
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = colorResource(R.color.yellow)
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = "OK", fontFamily = karlaFont)
+                        }
+                    })
             }
         }
     }
 }
 
 @Composable
-fun Onboarding() {
+fun OnboardingScreen(navController: NavHostController) {
+    val context = LocalContext.current
+    val userPreferences = remember {
+        UserPreferences(context)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .background(color = Color.White)
+            .padding(bottom = 30.dp)
     ) {
         Box(
             modifier = Modifier.fillMaxWidth(),
@@ -169,7 +237,7 @@ fun Onboarding() {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
-                .background(color = Color(R.color.primary)),
+                .background(color = colorResource(R.color.primary)),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -180,12 +248,6 @@ fun Onboarding() {
             )
         }
 
-        Form()
+        Form(userPreferences, navController)
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun OnboardingPreview() {
-    Onboarding()
 }
