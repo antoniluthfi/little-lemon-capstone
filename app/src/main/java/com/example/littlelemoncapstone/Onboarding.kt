@@ -29,7 +29,12 @@ import kotlinx.coroutines.launch
 val karlaFont = FontFamily(Font(R.font.karla_regular))
 
 @Composable
-fun Form(userPreferences: UserPreferences, navController: NavHostController) {
+fun OnboardingForm(navController: NavHostController) {
+    val context = LocalContext.current
+    val userPreferences = remember {
+        UserPreferences(context)
+    }
+
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -209,11 +214,6 @@ fun Form(userPreferences: UserPreferences, navController: NavHostController) {
 
 @Composable
 fun OnboardingScreen(navController: NavHostController) {
-    val context = LocalContext.current
-    val userPreferences = remember {
-        UserPreferences(context)
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -248,6 +248,6 @@ fun OnboardingScreen(navController: NavHostController) {
             )
         }
 
-        Form(userPreferences, navController)
+        OnboardingForm(navController)
     }
 }
