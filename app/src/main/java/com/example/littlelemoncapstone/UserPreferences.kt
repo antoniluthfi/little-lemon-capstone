@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.map
 class UserPreferences(private val context: Context) {
     companion object {
         private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "userData")
-        private val FIRST_NAME = stringPreferencesKey("")
-        private val LAST_NAME = stringPreferencesKey("")
-        private val EMAIL = stringPreferencesKey("")
+        private val FIRST_NAME = stringPreferencesKey("first_name")
+        private val LAST_NAME = stringPreferencesKey("last_name")
+        private val EMAIL = stringPreferencesKey("email")
     }
 
     val firstNameFlow: Flow<String> =
@@ -31,6 +31,14 @@ class UserPreferences(private val context: Context) {
             preferences[FIRST_NAME] = name
             preferences[LAST_NAME] = lastName
             preferences[EMAIL] = email
+        }
+    }
+
+    suspend fun removeUserData() {
+        context.dataStore.edit { preferences ->
+            preferences[FIRST_NAME] = ""
+            preferences[LAST_NAME] = ""
+            preferences[EMAIL] = ""
         }
     }
 }
