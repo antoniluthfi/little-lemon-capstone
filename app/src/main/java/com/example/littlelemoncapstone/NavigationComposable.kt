@@ -14,5 +14,8 @@ fun Navigation(navController: NavHostController) {
         composable(Onboarding.route) {
             OnboardingScreen(navController)
         }
+        composable(Profile.route) {
+            Profile(navController)
+        }
     }
 }
